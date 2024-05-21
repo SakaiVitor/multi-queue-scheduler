@@ -8,6 +8,7 @@ typedef struct Process {
     int num_io_ops;
     int io_remaining;
     int waiting_time;
+    int time_in_q1;
     struct Process* next;
 } Process;
 
@@ -69,10 +70,16 @@ void round_robin(Queue* q0, Queue* q1, int quantum, int io_device_time) {
         // Process Q1
         else if (!is_empty(q1)) {
             Process* process = dequeue(q1);
-            if (process->remaining_time > 0) {
-                printf("P%d (%d - %d)\n", process->id, time, time + process->remaining_time);
-                time += process->remaining_time;
-                process->remaining_time = 0;
+            process->time_in_q1 += quantum;  
+            if (process->time_in_q1 >= 30) {  
+                enqueue(q0, process);
+            } else {
+                if (process->remaining_time > 0) {
+                    printf("P%d (%d - %d)\n", process->id, time, time + process->remaining_time);
+                    time += process->remaining_time;
+                    process->remaining_time = 0;
+                }
+                enqueue(q1, process);  
             }
         }
     }
@@ -83,8 +90,8 @@ int main() {
     Queue q1 = {NULL, NULL};
 
     // Entrada de dados (exemplo)
-    Process p0 = {0, 50, 50, 1, 1, 0, NULL};
-    Process p1 = {1, 20, 20, 2, 2, 0, NULL};
+    Process p0 = {0, 50, 50, 1, 1, 0, 0, NULL};
+    Process p1 = {1, 20, 20, 2, 2, 0, 0, NULL};
 
     enqueue(&q0, &p0);
     enqueue(&q0, &p1);
