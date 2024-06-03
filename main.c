@@ -88,13 +88,16 @@ void round_robin(Queue* q0, Queue* q1, int quantum, int io_device_time) {
 int main() {
     Queue q0 = {NULL, NULL};
     Queue q1 = {NULL, NULL};
-
-    // Entrada de dados (exemplo)
-    Process p0 = {0, 50, 50, 1, 1, 0, 0, NULL};
-    Process p1 = {1, 20, 20, 2, 2, 0, 0, NULL};
+    
+    Process p0 = {0, 8, 8, 3, 3, 0, 0, NULL};  // P0: Burst = 8, E/S = 3
+    Process p1 = {1, 40, 40, 1, 1, 0, 0, NULL};  // P1: Burst = 40, E/S = 1
+    Process p2 = {2, 10, 10, 2, 2, 0, 0, NULL};  // P2: Burst = 10, E/S = 2
+    Process p3 = {3, 30, 30, 1, 1, 0, 0, NULL};  // P3: Burst = 30, E/S = 1
 
     enqueue(&q0, &p0);
     enqueue(&q0, &p1);
+    enqueue(&q0, &p2);
+    enqueue(&q0, &p3);
 
     int quantum = 10;
     int io_device_time = 20;
