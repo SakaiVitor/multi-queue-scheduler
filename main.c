@@ -62,7 +62,7 @@ void round_robin(Queue* q0, Queue* q1, int quantum, int io_device_time) {
                 process->remaining_time = 0;
                 if (process->io_remaining > 0) {
                     process->io_remaining--;
-                    process->remaining_time = io_device_time;
+                    process->remaining_time = process->burst_time; // Reseta para o próximo burst de CPU
                     enqueue(q1, process);
                 }
             }
@@ -72,14 +72,21 @@ void round_robin(Queue* q0, Queue* q1, int quantum, int io_device_time) {
         else if (!is_empty(q1)) {
             Process* process = dequeue(q1);
             if (process->remaining_time > 0) {
-                printf("P%d (%d - %d)\n", process->id, time, time + process->remaining_time);
-                time += process->remaining_time;
-                process->remaining_time = 0;
-            }
-            if (process->io_remaining > 0) {
-                process->io_remaining--;
-                process->remaining_time = io_device_time;
-                enqueue(q1, process);
+                if (process->remaining_time > quantum) {
+                    printf("P%d (%d - %d)\n", process->id, time, time + quantum);
+                    time += quantum;
+                    process->remaining_time -= quantum;
+                    enqueue(q1, process);
+                } else {
+                    printf("P%d (%d - %d)\n", process->id, time, time + process->remaining_time);
+                    time += process->remaining_time;
+                    process->remaining_time = 0;
+                    if (process->io_remaining > 0) {
+                        process->io_remaining--;
+                        process->remaining_time = process->burst_time; // Reseta para o próximo burst de CPU
+                        enqueue(q1, process);
+                    }
+                }
             }
         }
     }
