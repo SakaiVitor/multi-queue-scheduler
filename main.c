@@ -63,6 +63,7 @@ void round_robin(Queue* q0, Queue* q1, int quantum, int io_device_time) {
                 if (process->io_remaining > 0) {
                     process->io_remaining--;
                     process->remaining_time = io_device_time;
+                    enqueue(q1, process);
                 }
             }
         }
@@ -70,16 +71,15 @@ void round_robin(Queue* q0, Queue* q1, int quantum, int io_device_time) {
         // Process Q1
         else if (!is_empty(q1)) {
             Process* process = dequeue(q1);
-            process->time_in_q1 += quantum;  
-            if (process->time_in_q1 >= 30) {  
-                enqueue(q0, process);
-            } else {
-                if (process->remaining_time > 0) {
-                    printf("P%d (%d - %d)\n", process->id, time, time + process->remaining_time);
-                    time += process->remaining_time;
-                    process->remaining_time = 0;
-                }
-                enqueue(q1, process);  
+            if (process->remaining_time > 0) {
+                printf("P%d (%d - %d)\n", process->id, time, time + process->remaining_time);
+                time += process->remaining_time;
+                process->remaining_time = 0;
+            }
+            if (process->io_remaining > 0) {
+                process->io_remaining--;
+                process->remaining_time = io_device_time;
+                enqueue(q1, process);
             }
         }
     }
@@ -88,7 +88,8 @@ void round_robin(Queue* q0, Queue* q1, int quantum, int io_device_time) {
 int main() {
     Queue q0 = {NULL, NULL};
     Queue q1 = {NULL, NULL};
-    
+
+    // Entrada de dados conforme o PDF
     Process p0 = {0, 8, 8, 3, 3, 0, 0, NULL};  // P0: Burst = 8, E/S = 3
     Process p1 = {1, 40, 40, 1, 1, 0, 0, NULL};  // P1: Burst = 40, E/S = 1
     Process p2 = {2, 10, 10, 2, 2, 0, 0, NULL};  // P2: Burst = 10, E/S = 2
